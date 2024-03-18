@@ -1,0 +1,171 @@
+syntax = "proto3";
+
+option cc_generic_services=false;
+
+package GameRecordProto;
+
+//收藏列表
+message QueryCollectGameReq
+{
+    sint32 iCurrPage = 1;   // 当前页(1开始 一页10条)
+}
+
+message CollectGameDetailInfo
+{
+    sint32 iGameType   = 1;   // 游戏类型 0 其它  8 大菠萝
+    string sGameDetail = 2;   // Pb.GameDetail 或 Pb.GameDetailPineApple
+}
+
+message QueryCollectGameResp
+{
+    sint32 iResultID                     = 1;   // 结果 0 成功
+    sint32 iCurrPage                     = 2;   // 当前页 
+    sint32 iPageCount                    = 3;   // 总页数
+    repeated CollectGameDetailInfo infos = 4;   // CollectGameDetailInfo
+}
+
+//删除收藏牌谱
+message DeleteCollectGameReq
+{
+    string sBriefID                        = 1;//
+    sint32 iRound                          = 2;//第几手
+}
+
+message DeleteCollectGameResp
+{
+    sint32 iResultID                       = 1;
+    string sBriefID                        = 2;//
+    sint32 iRound                          = 3;//第几手
+}
+
+//查询牌局概况
+message QueryGameBriefReq
+{
+    sint32 iGameType                        = 1;//玩法类型 Pb.E_GAME_TYPE
+    sint32 iDays                            = 2;//最近多少天
+    sint32 iCurrPage                        = 3;//
+    sint64 lPlayerID                        = 4;
+}
+
+message QueryGameBriefResp
+{
+    sint32 iResultID                        = 1;
+    int32 iGameType                         = 2;//玩法类型 Pb.E_GAME_TYPE
+    sint32 iDays                            = 3;//最近多少天
+    string gameStat                         = 4;//玩家统计数据 Pb.UserGameStat
+    repeated string briefInfos              = 5;//牌局信息 Pb.GameBriefInfo
+    sint32 iCurrPage                        = 6;//
+    sint32 iPageCount                       = 7;//总页数
+}
+
+//牌局详情
+message QueryGameInfoReq
+{
+    string sBriefID                         = 1;
+    sint32 iCurrPage                        = 2;   //从1开始
+    sint32 iGameType                        = 3;   // 游戏类型(6牛仔有特殊)
+}
+
+message QueryGameInfoResp
+{
+    sint32 iResultID                        = 1;
+    string sBriefID                         = 2;
+    sint32 iCurrPage                        = 3;//从1开始
+    string gameInfo                         = 4; //Pb.GameInfo
+    sint32 iPageCount                       = 5;//总页数
+
+}
+
+//保险列表
+message QueryGameInsureReq
+{
+    string sBriefID                         = 1;
+    sint32 iCurrPage                        = 2;//从1开始
+}
+
+message QueryGameInsureResp
+{
+    sint32 iResultID                        = 1;
+    string sBriefID                         = 2;
+    sint32 iCurrPage                        = 3;//从1开始
+    repeated string insureInfos             = 4;//保险列表 Pb.UserInfo
+    sint32 iPageCount                       = 5;//总页数
+    repeated string insureDetail            = 6;//保险明细 Pb.GameInsureInfo
+}
+
+//牌局请求列表
+message QueryGameApplyReq
+{
+    string sBriefID                         = 1;
+    sint32 iCurrPage                        = 2;//从1开始
+}
+
+message QueryGameApplyResp
+{
+    sint32 iResultID                      = 1;
+    string sBriefID                         = 2;
+    sint32 iCurrPage                        = 3;//从1开始
+    repeated string applyInfo               = 4;//申请列表 Pb.GameApplyInfo
+    sint32 iPageCount                       = 5;//总页数
+}
+
+//查看牌局数据
+message QueryGameStatReq
+{
+    string sBriefID                         = 1;
+}
+
+message QueryGameStatResp
+{
+    sint32 iResultID                       = 1;
+    string sBriefID                         = 2;
+    string gameStat                         = 3; //Pb.UserGameStat
+}
+
+//牌谱列表
+message QueryGameDetailReq
+{
+    sint32 iCurrPage                        = 1;//
+    string sBriefID                         = 2;
+}
+
+message QueryGameDetailResp
+{
+    sint32 iResultID                        = 1;
+    sint32 iCurrPage                        = 2;//
+    string sBriefID                         = 3;
+    string sBestWinInfo                     = 4;//最大赢家Pb.UserInfo
+    string sBestCardInfo                    = 5;//最大牌赢家Pb.UserInfo
+    repeated string gameDetails             = 6;//Pb.GameDetail
+    sint32 iPageCount                       = 7;//总页数
+}
+
+
+// 牛仔牌谱
+message QueryGameDetailCowBoyReq
+{
+    string sBriefID = 1;
+}
+
+message QueryGameDetailCowBoyResp
+{
+    sint32 iResultID            = 1;   // 结果 0 成功 其它错误
+    repeated string gameDetails = 2;   // Pb.GameDetailCowBoy
+}
+
+// 大菠萝牌谱
+message QueryGameDetailPineAppleReq
+{
+    sint32 iCurrPage = 1;   // 页码
+    string sBriefID  = 2;   // 唯一KEY
+}
+
+message QueryGameDetailPineAppleResp
+{
+    sint32 iResultID            = 1;   // 结果 0 成功 其它错误
+    sint32 iCurrPage            = 2;   // 当前页码
+    sint32 iPageCount           = 3;   // 总页数
+    string sBriefID             = 4;   // 唯一KEY
+    string sBestWinInfo         = 5;   // 最大赢家Pb.PineAppleUserInfo
+    repeated string gameDetails = 6;   // Pb.GameDetailPineApple
+}

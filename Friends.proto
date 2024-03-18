@@ -1,0 +1,150 @@
+syntax = "proto3";
+
+option cc_generic_services=false;
+
+package FriendsProto;
+
+message AddFriendReq
+{
+    sint64 friend_uid = 1;  //好友ID
+    string content    = 2;  //验证信息
+}
+
+message AddFriendResp
+{
+    sint32 resultCode = 1;  //结果码
+    sint64 friend_uid = 2;  //好友ID
+}
+
+message DeleteFriendReq
+{
+    sint64 friend_uid = 1;   //好友ID
+}
+
+message DeleteFriendResp
+{
+    sint32 resultCode = 1;  //结果码
+    sint64 friend_uid = 2;  //好友ID
+}
+
+message UserInfo
+{
+    message ClubInfo
+    {
+        sint64 cId        = 1;   // 俱乐部ID
+        string logo       = 2;   // LOGO
+        string name       = 3;   // 名称
+        sint32 level      = 4;   // 等级
+        string country    = 5;   // 国家编码
+        sint32 position   = 6;   // E_CLUB_POSITION
+    }
+    sint64 uid                      = 1;//用户ID
+    string name                     = 2;//玩家昵称
+    string head                     = 3;//头像路径
+    sint32 gender                   = 4;//玩家性别 0-未知 1-男 2-女
+    string signature                = 5;//用户签名
+    string apply_content            = 6;//验证信息
+    string remark_content           = 7;//备注信息
+    sint32 logout_time              = 8;//离线时间
+    bool bFriend                    = 9;//是否是好友
+    repeated ClubInfo club_info     = 10;//加入的俱乐部
+}
+
+enum Eum_Friend_Relationship_Type
+{
+    E_APPLICANT         = 0; //发出申请
+    E_BE_APPLIED        = 1; //被申请
+    E_APPLY_BEEN_READ   = 2; //请求已读
+    E_FRIEND            = 3; //好友
+    E_DELETE            = 4; //已删除 
+}
+
+message QueryFriendListReq
+{
+    sint32 iCurrPage = 1;//
+}
+
+message QueryFriendListResp
+{
+    sint32 resultCode   = 1;  //结果码
+    sint32 iCurrPage    = 2;//
+    sint32 iPageCount   = 3;//总页数
+    repeated UserInfo FriendList = 4;  //好友列表
+}
+
+message QueryApplicantListReq
+{
+    sint32 iCurrPage = 1;//
+}
+
+message QueryApplicantListResp
+{
+    sint32 resultCode   = 1;  //结果码
+    sint32 iCurrPage    = 2;//
+    sint32 iPageCount   = 3;//总页数
+    repeated UserInfo ApplicantList = 4;   //申请列表
+}
+
+//同意或拒绝好友请求
+message AgreeToAddReq
+{
+    sint64    friend_uid = 1;   //好友ID
+    sint32    is_agree = 2;     //同意为1,否则为0
+}
+
+message QueryFriendDetailReq
+{
+    sint32 uid = 1;//
+}
+
+message QueryFriendDetailResp
+{
+    sint32 resultCode   = 1;  //结果码
+    UserInfo FriendDetail = 4;  //详情
+}
+
+message AgreeToAddResp
+{
+    sint32 resultCode = 1;  //结果码
+    sint32 is_agree = 2;     //同意为1,否则为0
+}
+
+//添加备注
+message AddRemarkReq
+{
+    sint64 remark_uid = 1;
+    string content = 2;
+}
+
+message AddRemarkResp
+{
+    sint64 resultCode = 1;
+    string content = 2;
+}
+
+//删除备注
+message DeleteRemarkReq
+{
+    sint64 remark_uid = 1;
+}
+
+message DeleteRemarkResp
+{
+    sint64 resultCode = 1;
+    sint64 remark_uid = 2;
+}
+
+//查询备注列表
+message QueryRemarkReq
+{
+    sint32 iCurrPage = 1;//
+    string filter_content = 2;//筛选内容
+}
+
+message QueryRemarkResp
+{
+    sint32 resultCode   = 1;  //结果码
+    sint32 iCurrPage    = 2;//
+    sint32 iPageCount   = 3;//总页数
+    repeated UserInfo RemarkList = 4;  //备注列表
+}

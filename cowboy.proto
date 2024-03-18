@@ -1,0 +1,257 @@
+syntax = "proto3";
+
+option cc_generic_services=false;
+
+// 包名
+package XGameCBProto;
+
+// 协议版本
+enum E_Proto_Version
+{
+    iProtoVersionDefault = 0;
+    iProtoVersion        = 1021;  //协议版本
+}
+
+// 消息号枚举，CS发送和接受为同一消息号
+enum E_msg_ID 
+{
+    E_CB_MSGID_BEGIN        = 0;     // 开始
+
+    E_CB_msg2csGameStation_E    = 300;   // 重连数据
+    E_CB_msg2cGameBegin_E       = 301;   // 牌局开始
+    E_CB_msg2cSendCard_E        = 302;   // 发牌
+    E_CB_msg2cTimer_E           = 303;   // 倒计时通知
+    E_CB_msg2csTokenBet_E       = 304;   // 下注请求及应答
+    E_CB_msg2cTokenBet_E        = 305;   // 下注通知
+    E_CB_msg2cGameEnd_E         = 306;   // 游戏结束
+    E_CB_msg2csDoubleTokenBet_E = 307;   // 倍投
+    E_CB_msg2csRepeatTokenBet_E = 308;   // 复投
+    E_CB_msg2cMultTokenBet_E    = 309;   // 多区域下注通知(双倍与复投的通知)
+
+    E_CB_msg2csSit_E         = 311;   // 坐下
+    E_CB_msg2csBuyChip_E     = 312;   // 补充筹码
+    E_CB_msg2csWinData_E     = 313;   // 走势图
+    E_CB_msg2csWinRecord_E   = 314;   // 牌局统计
+    E_CB_msg2cStand_E        = 315;   // 站起通知(连续固定局数未下注强制站起)
+   
+    E_CB_MSG_ID_END          = 399;   // 结束
+}
+
+// 区域标识
+enum E_AreaID_Type
+{
+    AreaID_Type_begin     = 0;
+    AreaID_Type_Cow_Boy   = 101;    // 牛仔
+    AreaID_Type_Cow_Tie   = 102;    // 平局
+    AreaID_Type_Cow_Girl  = 103;    // 美女
+    AreaID_Type_Own_One   = 201;    // 手牌 同花/连牌/同花连牌
+    AreaID_Type_Own_Two   = 202;    // 手牌 对子
+    AreaID_Type_Own_Three = 203;    // 手牌 对A
+    AreaID_Type_Win_One   = 301;    // 获胜牌型 高牌/1对
+    AreaID_Type_Win_Two   = 302;    // 获胜牌型 两对
+    AreaID_Type_Win_Three = 303;    // 获胜牌型 3条/顺子/同花
+    AreaID_Type_Win_Four  = 304;    // 获胜牌型 葫芦
+    AreaID_Type_Win_Five  = 305;    // 获胜牌型 同花顺
+}
+
+// 游戏状态
+enum E_Game_Status
+{
+    Game_Status_Ready    = 0;   // 准备
+    Game_Status_SendCard = 1;   // 发牌
+    Game_Status_Bet      = 2;   // 下注
+    Game_Status_Cal      = 3;   // 结算
+}
+
+// 牌
+message CB_Card
+{
+    int32 iCardType       = 1;   // 当前牌型
+    repeated int32 vCards = 2;   // 牌值 
+}
+
+// 游戏数据
+message GameInfo
+{
+    repeated sint32 vWin         = 1;   // 赢的
+    map<sint32, CB_Card> mCbCard = 2;   // key 0 牛仔手牌 1 美女手牌 2 公共牌 3 牛仔最终牌 4 美女最终牌
+}
+
+// 个人数据
+message GameUserInfo
+{
+    string sNickname = 1;    // 昵称
+    string sHeadstr  = 2;    // 头像
+    sint64 lAmount   = 3;    // 额度
+}
+
+// 下注数据
+message GameUserBetInfo
+{
+    sint32 iType  = 1;   // 下注区域 E_AreaID_Type
+    sint32 iIndex = 2;   // 下注筹码标识
+    sint32 iCount = 3;   // 筹码数量
+} 
+
+// E_CB_msg2cGameStation_E
+message CB_msg2cGameStation
+{
+    message AreaInfoBet
+    {
+        map<sint32, sint32> mBetData = 1;   // key 筹码下标 value 数量
+    }
+    
+    sint32 iResultID                      = 1;    // 结果 0 成功 其它失败
+    sint32 iGameStatus                    = 2;    // 当前状态(E_Game_Status)
+    sint32 iRound                         = 3;    // 当前局数
+    sint32 iTime                          = 4;    // 结束时间戳
+    sint32 iCard                          = 5;    // 第一张公共牌(发牌后与结算前状态时需要)
+    sint32 iSelf                          = 6;    // 自己是否在座位上 0 否  1 是
+    sint32 lBalance                       = 7;    // 自己的余额(庄家的话就是庄家余额)
+    map<sint32, AreaInfoBet> mAreaInfoBet = 8;    // 区域下注信息 key E_AreaID_Type
+    map<sint32, AreaInfoBet> mOwnBet      = 9;    // 自己的下注信息
+    sint32 iPairAIdle                     = 10;   // 对A几手未出
+    sint32 iHuLuIdle                      = 11;   // 葫芦几手未出
+    sint32 iKingIdle                      = 12;   // 皇同几手未出
+    repeated sint32 vCowBoy               = 13;   // 牛仔平局美女 101-102-103 <6条>
+    repeated sint32 vHandSame             = 14;   // 任一人手牌 同花/连牌 1 出 2 未出 <25条>
+    repeated sint32 vHandPair             = 15;   // 任一人手牌 对子 1 出 2 未出 <25条>
+    repeated sint32 vWinHight             = 16;   // 获胜牌型 高牌/一对 1 出 2 未出 <12条>
+    repeated sint32 vWinTwoPair           = 17;   // 获胜牌型 两对  1 出 2 未出 <12条>
+    repeated sint32 vWinSame              = 18;   // 获胜牌型 三条/顺子/同花 1 出 2 未出 <15条>
+    sint32 iBetType                       = 19;   // 投注类型 0 正常 1 复投 2 倍投
+}
+
+// E_CB_msg2cGameBegin_E
+message CB_msg2cGameBegin
+{
+    sint32 iRound = 1;   // 局数
+    sint32 iTime  = 2;   // 结束时间戳
+}
+
+// E_CB_msg2cSendCard_E 
+message CB_msg2cSendCard
+{
+    sint32 iRound = 1;   // 局数
+    sint32 iCard  = 2;   // 第一张公共牌
+}
+
+// E_CB_msg2cTimer_E
+message CB_msg2cTimer
+{
+    sint32 iType = 1;   // 0 下注倒计时 1 准备倒计时 
+    sint32 iTime = 2;   // 结束时间戳
+}
+
+// E_CB_msg2csTokenBet_E 下注请求
+message CB_msg2sTokenBet
+{
+    sint32 iType  = 1;   // 下注区域 E_AreaID_Type
+    sint32 iIndex = 2;   // 下注筹码标识
+}
+
+// E_CB_msg2csTokenBet_E  下注返回
+message CB_msg2cTokenBet
+{
+    sint32 iResultID = 1;   // 结果 0 成功 其它失败
+    sint32 iIndex    = 2;   // 下注筹码标识
+    sint64 lBalance  = 3;   // 余额
+}
+
+// E_CB_msg2cTokenBet_E 下注通知
+message CB_msg2cTokenBetNotice
+{
+    sint64 lPlayerID = 1;   // 玩家ID 判定是从哪飞筹码
+    sint32 iType     = 2;   // 下注区域 E_AreaID_Type
+    sint32 iIndex    = 3;   // 下注筹码标识
+}
+
+// E_CB_msg2csDoubleTokenBet_E
+message CB_msg2cDoubleTokenBet
+{
+    sint32 iResultID = 1;   // 结果 0 成功 其它失败
+    sint64 lBalance  = 2;   // 余额
+}
+
+// E_CB_msg2csRepeatTokenBet_E
+message CB_msg2cRepeatTokenBet
+{
+    sint32 iResultID = 1;   // 结果 0 成功 其它失败
+    sint64 lBalance  = 2;   // 余额
+}
+
+// E_CB_msg2cMultTokenBet_E
+message CB_msg2cMultTokenBetNotice
+{
+    sint64 lPlayerID              = 1;   // 玩家ID 判定从哪飞筹码
+    repeated GameUserBetInfo bets = 2;   // 下注列表   
+}
+
+// E_CB_msg2cGameEnd_E
+message CB_msg2sGameEnd
+{
+    GameInfo gameInfo     = 1;   // 游戏数据
+    GameUserInfo userInfo = 2;   // 大赢家
+    sint32 iReal          = 3;   // 是否结算 0 否(退还玩家筹码) 1 是(正常流程)
+    sint64 lBalance       = 4;   // 庄家余额
+}
+
+
+// E_CB_msg2csSit_E
+message CB_msg2sSit
+{
+    sint64 lTakeIn = 1;   // 带入
+}
+
+// E_CB_msg2csSit_E
+message CB_msg2cSit
+{
+    sint32 iResultID = 1;  // 0 成功 -1 重新坐下 其他失败
+    sint64 lTakeIn   = 2;  // 带入
+}
+
+// E_CB_msg2csBuyChip_E
+message CB_msg2sBuyChip
+{
+    sint64 lTakeIn = 1;   // 补充额度
+}
+
+// E_CB_msg2csBuyChip_E
+message CB_msg2cBuyChip
+{
+    sint32 iResultID = 1;   // 0 成功 其他失败
+    sint64 lTakeIn   = 2;   // 补充额度
+}
+
+// E_CB_msg2csWinData_E
+message CB_msg2cWinData
+{
+    sint32 iResultID             = 1;   // 0 成功 其他失败
+    repeated sint32 vWinCowBoy   = 2;   // 牛仔平局美女 101-102-103 <300条>
+    repeated sint32 vWinCardType = 3;   // 获取牌型
+}
+
+// E_CB_msg2csWinRecord_E
+message CB_msg2cWinRecord
+{
+    sint32 iResultID        = 1;    // 0 成功 其他失败
+    sint32 iCowBoyWins      = 2;    // 牛仔(胜负平)
+    sint32 iCowTieWins      = 3;    // 平局(胜负平)
+    sint32 iCowGirlWins     = 4;    // 美女(胜负平)
+    sint32 iHandSameWins    = 5;    // 同花/连牌/同花连牌(任一人手牌)
+    sint32 iHandPairWins    = 6;    // 对子(任一人手牌
+    sint32 iHandPairAWins   = 7;    // 对A(任一人手牌
+    sint32 iWinHightWins    = 8;    // 高牌/一对(获胜牌型)
+    sint32 iWinTwoPairsWins = 9;    // 两对(获胜牌型)
+    sint32 iWinSameWins     = 10;   // 3条/顺子/同花(获胜牌型)
+    sint32 iWinHuLuWins     = 11;   // 葫芦(获胜牌型)
+    sint32 iWinKingWins     = 12;   // 金刚/同花顺/皇同(获胜牌型)
+}
+
+// E_CB_msg2cStand_E
+message CB_msg2cStand
+{
+    sint32 iResultID = 1;   // 0 成功
+}
+
+//////////////////////////////////////////
